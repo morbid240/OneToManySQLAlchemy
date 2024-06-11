@@ -8,6 +8,7 @@ from orm_base import metadata
 # will not execute that code, and SQLAlchemy will be unaware of the mapped table.
 from Department import Department
 from Course import Course
+from Section import Section
 from Option import Option
 from Menu import Menu
 # Poor man's enumeration of the two available modes for creating the tables
@@ -75,6 +76,52 @@ def add_course(session):
     units: int = int(input('How many units for this course-->'))
     course = Course(department, number, name, description, units)
     session.add(course)
+
+def add_section(sess):
+    """
+    Prompt user for adding a new section. Checks input for Uniqueness contraints
+    of {year, semester, schedule, start_time, building, room}
+    and {year, semester, scheudle, strt_time, instructor}
+    """
+    print("Which course are you adding this section?")
+    course: Course = select_course(sess)
+    unique_room: bool = False
+    unique_instructor: bool = False
+
+    section_year: int = -1
+    semester: str = ''
+    schedule: str = ''
+    start_time: Time = "2:00:00"
+
+    # When is the section
+    semester = input("Section semester-->")
+    section_year = input("Section year-->")
+    schedule = input("Section schedule-->")
+    start_time = input("Section start time as HH:MM::SS-->")
+    # Check uniqueness constraints, match to when 
+    while not unique_room or unique_instructor:
+        building = input("Building-->")
+        room = int(input("Room-->"))
+        room_count: int = session.query(Section).filter(Section.semester == semester, Section.sectionYear == section_year, 
+                                                        Section.schedule == schedule, Section.startTime == start_time,
+                                                        Section.building == building, Section.room==room).count()
+        unique_room = room_count == 0
+        if not unique_room:
+            print("We already have a section in that room, try again.")
+        if unique_room:
+            instructor = input("Instructor-->")
+            instructor_count = session.query(Section).filter(Section.semester == semester, Section.sectionYear == section_year, 
+                                                        Section.schedule == schedule, Section.startTime == start_time,
+                                                        Section.instructor == instructor).count()
+            unique_instructor = instructor_count == 0
+            if not unique_instructor:
+                print("That instructor is already teaching another section at that time. Try again.")
+            if unique_instructor:
+                section_number = input("Section number with leading 0-->")
+
+    section = Section(course, section_number, semester, section_year, building, room, schedule, start_time, instructor)
+    session.add(section)
+
 
 
 def select_department(sess) -> Department:

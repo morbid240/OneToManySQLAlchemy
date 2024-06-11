@@ -1,3 +1,10 @@
+
+'''
+Modified to add menu options for section
+
+'''
+
+
 from Menu import Menu
 from Option import Option
 from constants import *
@@ -16,8 +23,10 @@ variables or not in Python.
 menu_main = Menu('main', 'Please select one of the following options:', [
     Option("Add department", "add_department(sess)"),
     Option("Add course", "add_course(sess)"),
+    Option("Add section", "add_section(sess)"),
     Option("Delete department", "delete_department(sess)"),
     Option("Delete course", "delete_course(sess)"),
+    Option("Delete section", "delete_section(sess)"),
     Option("List all departments", "list_departments(sess)"),
     Option("List all courses", "list_courses(sess)"),
     Option("List department courses", "list_department_courses(sess)"),

@@ -26,8 +26,10 @@ if introspection_type == START_OVER or introspection_type == REUSE_NO_INTROSPECT
         a regular basis as a scheduled section of a given course.
 
         Note, this is just a shell of the Department class.  There are additional
-        columns needed, but this is enough to demonstrate one-to-many relationships."""
+        columns needed, but this is enough to demonstrate one-to-many relationships.
+        """
         __tablename__ = DC.__tablename__
+        name: Mapped[str] = DC.name
         abbreviation: Mapped[str] = DC.abbreviation
         """This is a bi-directional relationship.  The Department class manages
         a list of Courses, and the Course class manages an OO reference to the

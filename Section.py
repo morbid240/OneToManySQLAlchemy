@@ -1,67 +1,81 @@
+'''
+Malcolm Roddy
+CECS 323 Section 01
+Simple one to many SQLAlchemy
+This defines the Section table and its 
+relationship to Course along with its constraints
+'''
+# todo: define 
+
+
 from orm_base import Base
 from db_connection import engine
 from IntrospectionFactory import IntrospectionFactory
-from sqlalchemy import UniqueConstraint, ForeignKeyConstraint
-from sqlalchemy import String, Integer
+from sqlalchemy import UniqueConstraint, ForeignKeyConstraint, CheckConstraint
+from sqlalchemy import String, Integer, Time
 from sqlalchemy.orm import Mapped, mapped_column, relationship, column_property
 from sqlalchemy import Table
+from Course import Course
 from Department import Department
 from constants import START_OVER, REUSE_NO_INTROSPECTION, INTROSPECT_TABLES
 
-"""In this Entity, I decided to do everything in this file, even though it got a little
-busy.  So there is no CourseClass.py to go with the DepartmentClass.py file."""
 
 table_name: str = "courses"  # The physical name of this table
 # Find out whether the user is introspecting or starting over
 introspection_type = IntrospectionFactory().introspection_type
 if introspection_type == START_OVER or introspection_type == REUSE_NO_INTROSPECTION:
-    class Course(Base):
-        """A catalog entry.  Each course proposes to offer students who enroll in
-        a section of the course an organized sequence of lessons and assignments
-        aimed at teaching them specified skills."""
+    '''
+        If starting from scratch this class creates the table and initializes it
+        Or, reuse the tables that are in the schema without using SQLAlchemy to define 
+        the class
+    '''
+    class Section(Base):
         __tablename__ = table_name  # Give SQLAlchemy the name of the table.
-        """
-        The ForeignKey argument to the mapped_column method is not needed because I am 
-        specifying this foreign key constraint in the __table_args__ call farther down
-        in the code.  I can do this either "in-line" using ForeignKey in the mapped_column
-        call, OR (exclusive OR here) do it in __table_args__.
-        
-        If we have more than one column in the primary key of the parent, then we 
-        MUST use __table_args__, we canNOT express the foreign key constraint using
-        ForeignKey.  I show you how to do it in __table_args__ because you'll need
-        that for the relationship from courses into sections.
-        """
-        departmentAbbreviation: Mapped[str] = mapped_column('department_abbreviation',
-                                                            #                                                       ForeignKey("departments.abbreviation"),
+        # PRIMARY KEYS
+        departmentAbbreviation: Mapped[str] = mapped_column('department_abbreviation', primary_key=True)
+        courseNumber: Mapped[int] = mapped_column('course_number',                                               
                                                             primary_key=True)
-        department: Mapped["Department"] = relationship(back_populates="courses")
-        courseNumber: Mapped[int] = mapped_column('course_number', Integer,
+        course: Mapped["Course"] = relationship(back_populates="departments")
+        sectionNumber: Mapped[int] = mapped_column('section_number', Integer,
                                                   nullable=False, primary_key=True)
-        name: Mapped[str] = mapped_column('name', String(50), nullable=False)
-        description: Mapped[str] = mapped_column('description', String(500), nullable=False)
-        units: Mapped[int] = mapped_column('units', Integer, nullable=False)
-        # __table_args__ can best be viewed as directives that we ask SQLAlchemy to
-        # send to the database.  In this case, that we want two separate uniqueness
-        # constraints (candidate keys).
-        __table_args__ = (UniqueConstraint("department_abbreviation", "name", name="courses_uk_01"),
-                          ForeignKeyConstraint([departmentAbbreviation],
-                                               [Department.abbreviation]))
+        semester: Mapped[str] = mapped_column('semester', String(10), nullable=False
+                                                            primary_key=True)
+        sectionYear: Mapped[int] = mapped_column('section_year', Integer, nullable=False,
+                                                            primary_key=True)
+        # Rest of columns (Non primary)
+        building: Mapped[str] = mapped_column('building', String(6), nullable=False)
+        room: Mapped[int] = mapped_column('room', Integer, nullable=False)
+        schedule: Mapped[str] = mapped_column('schedule', String(6)) # Not mandatory?
+        startTime: Mapped[Time] = mapped_column('start_time', Time) # Not mandatory either?
+        instructor: Mapped[str] = mapped_column('instructor', String(80), nullable=False)
 
-        def __init__(self, department: Department, courseNumber: int, name: str, description: str, units: int):
-            """This is a hack.  I found that I could not add __init__ to the class from outside the
-            class definition block.  But I did not want to write the code for the __init__ twice.  So
-            I created this helper function that I just called init, and call that in __init__ to do
-            the actual work.  init only gets written once, saving me the worry of redundant code
-            between __init__ for the two different introspection approaches.
-            :param      department:     The Department instance that owns the new course.
-            :param      courseNumber:   The number of the new course.
-            :param      description:    Textual narrative of the course contents.
-            :param      units:          The number of academic hours awarded for a passing grade.
-            :return:                    None"""
-            self.init(department, courseNumber, name, description, units)
+        # Constraints
+        __table_args__ = (
+            # Canidate key 1: room cannot be occupied by more than one section at the same time, 
+            # Canidate key 2: instructor can't teach two sections at same time
+            UniqueConstraint("section_year", "semester", "schedule", "start_time", "building", "room", name="section_uk_01"),
+            UniqueConstraint("section_year", "semester", "schedule", "start_time", "instructor", name="section_uk_02"), 
+            # Ensure valid input
+            CheckConstraint(semester.in_(["Fall", "Spring", "Winter", "Summer I", "Summer II"])),
+            CheckConstraint(schedule.in_(["MW", "TuTh", "MWF", "F", "S"])),
+            CheckConstraint(building.in_(["VEC", "ECS", "EN2", "EN3", "EN4", "ET", "SSPA"])),
+            # Course (Parent) contains two primary keys, referenced here
+            ForeignKeyConstraint([departmentAbbreviation, courseNumber], [course.department_abbreviation, course.course_number])
+        )
+        
+        # "Constructor" for Section
+        def __init__(self, course: Course, sectionNumber: int, semester: str, sectionYear: int,  
+         building: str, room: int, schedule: str, startTime: Time, instructor: str ):
+            # Helper function, init does actual work
+            self.init(course, sectionNumber, semester, sectionYear, building, room, schedule, startTime, instructor)
+
 
 elif introspection_type == INTROSPECT_TABLES:
-    class Course(Base):
+    '''
+        When choosing option 3, introspect the tables which find tables in the 
+        schema and use them to define the class
+    '''
+    class Section(Base):
         __table__ = Table(table_name, Base.metadata, autoload_with=engine)
         # Otherwise, this property will be named department_abbreviation
         departmentAbbreviation: Mapped[str] = column_property(__table__.c.department_abbreviation)
@@ -74,31 +88,38 @@ elif introspection_type == INTROSPECT_TABLES:
             self.init(department, courseNumber, name, description, units)
 
 
-def set_department(self, department: Department):
-    """
-    Accept a new department without checking for any uniqueness.
-    I'm going to assume that either a) the caller checked that first
-    and/or b) the database will raise its own exception.
-    :param department:  The new department for the course.
-    :return:            None
-    """
-    self.department = department
-    self.departmentAbbreviation = department.abbreviation
-
-
-def init(self, department: Department, courseNumber: int, name: str, description: str, units: int):
-    self.set_department(department)
+'''
+    Functions below are not subject to options. Init is the constructor
+    that is called from the classes that call it from either introspect or 
+    not instrospect options. Essnetially a helper function
+    Str method is how we get info out from the class
+'''
+# Accepts a new course without uniqueness constraints
+def set_course(self, course: Course):
+    self.course = course
     self.courseNumber = courseNumber
-    self.name = name
-    self.description = description
-    self.units = units
 
 
+# initalize the table
+def init(self, course: Course, sectionNumber: int, semester: str, sectionYear: int,  
+         building: str, room: int, schedule: str, startTime: Time, instructor: str ):
+    self.set_course(course)
+    self.sectionNumber = sectionNumber
+    self.semester = semester
+    self.sectionYear = sectionYear
+    self.building = building
+    self.room = room
+    self.schedule = schedule
+    self.startTime = startTime
+    self.instructor = instructor
+
+# Return variables I guess that are within the class. 
+# Im not sure how it knows this if its outside of class/scope
 def __str__(self):
-    return f"Department abbrev: {self.departmentAbbreviation} number: {self.courseNumber} name: {self.name} units: {self.units}"
+    return f"Section number: {self.sectionNumber}"
 
 
 """Add the two instance methods to the class, regardless of whether we introspect or not."""
 setattr(Course, 'init', init)
-setattr(Course, 'set_department', set_department)
+setattr(Course, 'set_course', set_course)
 setattr(Course, '__str__', __str__)

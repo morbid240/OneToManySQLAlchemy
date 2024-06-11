@@ -1,17 +1,10 @@
-"""
-Connection is a module singleton that will create a new connection to the PostgreSQL
-database instance.  The connection process will only execute the first time that
-you import this module.  In any other language, we would make a class for this
-instead, and the object that we return would be a class rather than an instance
-variable.  But Python being what it is, we can do this more simply this way.
 
-Note:
-To get getpass to work properly in PyCharm, you need to configure your project:
-Click on the Run Menu at the very top of your PyCharm window.
-Select the Edit Configurations menu item.
-Select the "Emulate terminal in output console" checkbox.
-This will allow getpass to display the prompt and receive your password in the console.
-"""
+
+'''
+Malcolm Roddy
+Modified to default to my own credentials
+and proper database
+'''
 import getpass
 
 # Don't forget to install the sqlalchemy package into your project.
@@ -37,7 +30,7 @@ database            The name of the database within this particular instance of
                     PostgreSQL.  Every PostgreSQL has a postgres database, but
                     you can create additional databases as needed.  Each CECS 323
                     section has their own database in the campus PostgreSQL instance."""
-userID: str = input('User ID [postgres]--> ') or "postgres"
+userID: str = input('User ID [postgres]--> ') or "030573684"
 """In order to get getpass to prompt you on the console, go to Run | Edit Configurations
 in the top menu, and check the box: 'Emulate terminal in output console'.  Otherwise,
 you will never see the prompt for the database password."""
@@ -48,9 +41,9 @@ standpoint.  Which then means that the or with a text literal will result in tha
 literal as the output from the or operator.  Sort of a ghetto way to implement a
 default, but it works.  What can I say."""
 password: str = getpass.getpass(prompt=userID + ' password--> ')
-host: str = input('hostname [localhost]--> ') or "localhost"
+host: str = input('hostname [localhost]--> ') or "CECS-Postgresql"
 port: str = input('port number [5432]--> ') or "5432"
-database: str = input('database [postgres]--> ') or "postgres"
+database: str = input('database [postgres]--> ') or "2024SummerS01"
 # 'psycopg2' in this part of the db_url instructs SQLAlchemy that we are connecting to a PostgreSQL database.
 db_url: str = f"postgresql+psycopg2://{userID}:{password}@{host}:{port}/{database}"
 db_url_display: str = f"postgresql+psycopg2://{userID}:********@{host}:{port}/{database}"
