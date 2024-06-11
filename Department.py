@@ -1,3 +1,7 @@
+"""
+Unchanged from sample code
+"""
+
 from orm_base import Base
 from IntrospectionFactory import IntrospectionFactory
 from db_connection import engine
