@@ -2,7 +2,7 @@ from sqlalchemy import UniqueConstraint
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List  # Use this for the list of courses offered by the department
-
+from Department import Department
 """This is the guts of the department class that needs to be defined
 regardless whether we introspect or not."""
 __tablename__ = "departments"  # Give SQLAlchemy th name of the table.
