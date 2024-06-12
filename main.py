@@ -17,7 +17,7 @@ import IPython  # So that I can exit out to the console without leaving the appl
 from sqlalchemy import inspect  # map from column name to attribute name
 from pprint import pprint
 
-from Department_Query import add_department, select_department, delete_department, list_departments
+from Department_Query import add_department, select_department, delete_department, list_departments, list_department_courses
 
 def add_course(session):
     """
