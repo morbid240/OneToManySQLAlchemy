@@ -56,7 +56,7 @@ def delete_department(session):
     """
     print("deleting a department")
     department = select_department(session)
-    n_courses = session.query(Course).filter(Course.departmentAbbreviation == department.abbreviation).count():
+    n_courses = session.query(Course).filter(Course.departmentAbbreviation == department.abbreviation).count()
     if n_courses > 0:
         print(f"Sorry, there are {n_courses} courses in that department.  Delete them first, "
               "then come back here to delete the department.")
