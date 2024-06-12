@@ -2,6 +2,7 @@ from sqlalchemy import UniqueConstraint, ForeignKeyConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship, column_property
 from typing import List  # Use this for the list of courses offered by the department
 from sqlalchemy import String, Integer
+from Department import Department
 """This is the guts of the Course class that needs to be defined
 regardless whether we introspect or not."""
 
