@@ -139,40 +139,58 @@ def select_department(sess) -> Department:
         found = abbreviation_count == 1
         if not found:
             print("No department with that abbreviation.  Try again.")
-    return_department: Department = sess.query(Department). \
-        filter(Department.abbreviation == abbreviation).first()
-    return return_department
+    # return queried department
+    return sess.query(Department).filter(Department.abbreviation == abbreviation).first()
 
 
-def select_course(sess) -> Course:
-    """
-    Select a course by the combination of the department abbreviation and course number.
-    Note, a similar query would be to select the course on the basis of the department
-    abbreviation and the course name.
+def select_course(session) -> Course:
+    '''
+    Selects a course based on department and course number
+    Uses select_department
     :param sess:    The connection to the database.
-    :return:        The selected student.
-    """
+    :return:        The selected course.
+    '''
     found: bool = False
     department_abbreviation: str = ''
     course_number: int = -1
     while not found:
-        department_abbreviation = input("Department abbreviation--> ")
+        department = select_department(session)
         course_number = int(input("Course Number--> "))
-        name_count: int = sess.query(Course).filter(Course.departmentAbbreviation == department_abbreviation,
+        name_count: int = session.query(Course).filter(Course.departmentAbbreviation == department.abbreviation,
                                                     Course.courseNumber == course_number).count()
         found = name_count == 1
         if not found:
             print("No course by that number in that department.  Try again.")
-    course = sess.query(Course).filter(Course.departmentAbbreviation == department_abbreviation,
+    # return query with selected values
+    return session.query(Course).filter(Course.departmentAbbreviation == department_abbreviation,
                                        Course.courseNumber == course_number).first()
-    return course
 
-def select_section(session):
+
+def select_section(session) -> Section:
+    '''
+    Selects a section by combo of department abbreviation, 
+    course number, and section number
+    :param sess:    The connection to the database.
+    :return:        The selected section.
+    '''
     found: bool = False
-    section_number: int =-1
+    sectionNumber: int =-1
     while not found:
+        course = select_course(session)
         section_number = input("Section number-->")
+        section_count = session.query(Section).filter(Section.departmentAbbreviation == course.departmentAbbreciation,
+                                                      Section.courseNumber == course.courseNumber, 
+                                                      Section.sectionNumber = section_number).count()
+        found = section_count == 1
+        if not found:
+            print("No section by that number for that course. Try again.")
+
+    # otherwise found, return query
+    return session.query(Section).filter(Section.departmentAbbreviation == course.departmentAbbreciation,
+    Section.courseNumber == course.courseNumber, Section.sectionNumber == section_number).first()
         
+        
+
 def delete_department(session):
     """
     Prompt the user for a department by the abbreviation and delete it.
@@ -189,6 +207,11 @@ def delete_department(session):
         session.delete(department)
 
 def delete_course(session):
+    """
+    Prompt the user for a course and delete it.
+    :param session: The connection to the database.
+    :return:        None
+    """
     print("deleting a course")
     course = select_course(session)
     number_sections = session.query(Section).filter(Section.courseNumber == course.courseNumber).count()
@@ -197,7 +220,6 @@ def delete_course(session):
               "then come back here to delete the department.")
     else:
         session.delete(department)
-
 def list_departments(session):
     """
     List all departments, sorted by the abbreviation.
@@ -222,77 +244,6 @@ def list_courses(sess):
     courses: [Course] = sess.query(Course).order_by(Course.courseNumber)
     for course in courses:
         print(course)
-
-
-def move_course_to_new_department(sess):
-    """
-    Take an existing course and move it to an existing department.  The course has to
-    have a department when the course is created, so this routine just moves it from
-    one department to another.
-
-    The change in department has to occur from the Course end of the association because
-    the association is mandatory.  We cannot have the course not have any department for
-    any time the way that we would if we moved it to a new department from the department
-    end.
-
-    Also, the change in department requires that we make sure that the course will not
-    conflict with any existing courses in the new department by name or number.
-    :param sess:    The connection to the database.
-    :return:        None
-    """
-    print("Input the course to move to a new department.")
-    course = select_course(sess)
-    old_department = course.department
-    print("Input the department to move that course to.")
-    new_department = select_department(sess)
-    if new_department == old_department:
-        print("Error, you're not moving to a different department.")
-    else:
-        # check to be sure that we are not violating the {departmentAbbreviation, name} UK.
-        name_count: int = sess.query(Course).filter(Course.departmentAbbreviation == new_department.abbreviation,
-                                                    Course.name == course.name).count()
-        unique_name = name_count == 0
-        if not unique_name:
-            print("We already have a course by that name in that department.  Try again.")
-        if unique_name:
-            # Make sure that moving the course will not violate the {departmentAbbreviation,
-            # course number} uniqueness constraint.
-            number_count = sess.query(Course). \
-                filter(Course.departmentAbbreviation == new_department.abbreviation,
-                       Course.courseNumber == course.courseNumber).count()
-            if number_count != 0:
-                print("We already have a course by that number in that department.  Try again.")
-            else:
-                course.set_department(new_department)
-
-
-def select_student_from_list(session):
-    """
-    This is just a cute little use of the Menu object.  Basically, I create a
-    menu on the fly from data selected from the database, and then use the
-    menu_prompt method on Menu to display characteristic descriptive data, with
-    an index printed out with each entry, and prompt the user until they select
-    one of the Students.
-    :param session:     The connection to the database.
-    :return:            None
-    """
-    # query returns an iterator of Student objects, I want to put those into a list.  Technically,
-    # that was not necessary, I could have just iterated through the query output directly.
-    students: [Department] = list(sess.query(Department).order_by(Department.lastName, Department.firstName))
-    options: [Option] = []  # The list of menu options that we're constructing.
-    for student in students:
-        # Each time we construct an Option instance, we put the full name of the student into
-        # the "prompt" and then the student ID (albeit as a string) in as the "action".
-        options.append(Option(student.lastName + ', ' + student.firstName, student.studentId))
-    temp_menu = Menu('Student list', 'Select a student from this list', options)
-    # text_studentId is the "action" corresponding to the student that the user selected.
-    text_studentId: str = temp_menu.menu_prompt()
-    # get that student by selecting based on the int version of the student id corresponding
-    # to the student that the user selected.
-    returned_student = sess.query(Department).filter(Department.studentId == int(text_studentId)).first()
-    # this is really just to prove the point.  Ideally, we would return the student, but that
-    # will present challenges in the exec call, so I didn't bother.
-    print("Selected student: ", returned_student)
 
 
 def list_department_courses(sess):
