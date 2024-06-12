@@ -98,7 +98,7 @@ elif introspection_type == INTROSPECT_TABLES:
 # Accepts a new course without uniqueness constraints
 def set_course(self, course: Course):
     self.course = course
-    self.courseNumber = courseNumber
+    self.courseNumber = course.courseNumber
 
 
 # initalize the table
