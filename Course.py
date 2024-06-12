@@ -1,17 +1,8 @@
-
-
 from sqlalchemy.orm import Mapped, mapped_column, relationship, column_property
-
 from orm_base import Base
 from IntrospectionFactory import IntrospectionFactory
 from db_connection import engine
-
 from sqlalchemy import Table
-from sqlalchemy.orm import Mapped, mapped_column, relationship, column_property
-from typing import List  # Use this for the list of courses offered by the department
-from constants import START_OVER, INTROSPECT_TABLES, REUSE_NO_INTROSPECTION
-from sqlalchemy import Table
-
 from constants import START_OVER, REUSE_NO_INTROSPECTION, INTROSPECT_TABLES
 from typing import List  # Use this for the list of sections by course
 
@@ -23,14 +14,17 @@ introspection_type = IntrospectionFactory().introspection_type
 if introspection_type == START_OVER or introspection_type == REUSE_NO_INTROSPECTION:
     class Course(Base):
         __tablename__ = CC.__tablename__ 
+        # Primary Keys 
         departmentAbbreviation: Mapped[str] = CC.departmentAbbreviation
-        department: Mapped["Department"] = CC.department
         courseNumber: Mapped[int] = CC.courseNumber
         name: Mapped[str] = CC.name
+        # Other columns
         description: Mapped[str] = CC.description
         units: Mapped[int] = CC.units
+        # Relationships
+        department: Mapped["Department"] = CC.department
         sections: Mapped[List["Section"]] = CC.sections
-
+        # Constraints
         __table_args__ = CC.__table_args__
 
         def __init__(self, department: Department, courseNumber: int, name: str, description: str, units: int):
