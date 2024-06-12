@@ -41,9 +41,9 @@ standpoint.  Which then means that the or with a text literal will result in tha
 literal as the output from the or operator.  Sort of a ghetto way to implement a
 default, but it works.  What can I say."""
 password: str = getpass.getpass(prompt=userID + ' password--> ')
-host: str = input('hostname [localhost]--> ') or "CECS-Postgresql"
-port: str = input('port number [5432]--> ') or "5432"
-database: str = input('database [postgres]--> ') or "2024SummerS01"
+host: str = "CECS-Postgresql"
+port: str =  "5432"
+database: str = "2024SummerS01"
 # 'psycopg2' in this part of the db_url instructs SQLAlchemy that we are connecting to a PostgreSQL database.
 db_url: str = f"postgresql+psycopg2://{userID}:{password}@{host}:{port}/{database}"
 db_url_display: str = f"postgresql+psycopg2://{userID}:********@{host}:{port}/{database}"
