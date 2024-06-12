@@ -31,7 +31,7 @@ def add_section(session):
                                       Section.semester == semester, Section.start_time == start_time,
                                       Section.instructor == instructor).count()
           unique_instructor = instructor_count == 0
-          if not unique_instructor
+          if not unique_instructor:
             print("There is already an instructor teaching at that time. Try again.")
           section_number = int(input("Section Number --> "))
     # Otherwise we all good with values
