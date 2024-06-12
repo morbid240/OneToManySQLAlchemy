@@ -1,5 +1,4 @@
 
-from sqlalchemy import UniqueConstraint, ForeignKeyConstraint
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship, column_property
 
