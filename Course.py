@@ -16,6 +16,7 @@ from constants import START_OVER, REUSE_NO_INTROSPECTION, INTROSPECT_TABLES
 from typing import List  # Use this for the list of sections by course
 
 import CourseClass as CC
+from Department import Department
 
 introspection_type = IntrospectionFactory().introspection_type
 
