@@ -5,7 +5,7 @@ from sqlalchemy import String, Integer
 """This is the guts of the Course class that needs to be defined
 regardless whether we introspect or not."""
 
-
+from Department import Department
 # Table name
 __tablename__ = "courses"  
 
