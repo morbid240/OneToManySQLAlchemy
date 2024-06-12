@@ -7,7 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship, column_property
 from sqlalchemy import Table
 from Department import Department
 from constants import START_OVER, REUSE_NO_INTROSPECTION, INTROSPECT_TABLES
-
+from typing import List  # Use this for the list of sections by course
 """In this Entity, I decided to do everything in this file, even though it got a little
 busy.  So there is no CourseClass.py to go with the DepartmentClass.py file."""
 
