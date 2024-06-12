@@ -40,6 +40,8 @@ if introspection_type == START_OVER or introspection_type == REUSE_NO_INTROSPECT
         name: Mapped[str] = mapped_column('name', String(50), nullable=False)
         description: Mapped[str] = mapped_column('description', String(500), nullable=False)
         units: Mapped[int] = mapped_column('units', Integer, nullable=False)
+        '''Relationship from courses to sections'''
+        # courses: Mapped[List["Course"]] = relationship(back_populates="department")
         # __table_args__ can best be viewed as directives that we ask SQLAlchemy to
         # send to the database.  In this case, that we want two separate uniqueness
         # constraints (candidate keys).
