@@ -21,12 +21,8 @@ from constants import START_OVER, REUSE_NO_INTROSPECTION, INTROSPECT_TABLES
 table_name: str = "sections"  # The physical name of this table
 # Find out whether the user is introspecting or starting over
 introspection_type = IntrospectionFactory().introspection_type
-if introspection_type == START_OVER or introspection_type == REUSE_NO_INTROSPECTION:
-    '''
-        If starting from scratch this class creates the table and initializes it
-        Or, reuse the tables that are in the schema without using SQLAlchemy to define 
-        the class
-    '''
+
+
     class Section(Base):
         __tablename__ = table_name  # Give SQLAlchemy the name of the table.
         # PRIMARY KEYS
@@ -65,57 +61,23 @@ if introspection_type == START_OVER or introspection_type == REUSE_NO_INTROSPECT
         
         # "Constructor" for Section
         def __init__(self, course: Course, sectionNumber: int, semester: str, sectionYear: int,  
-         building: str, room: int, schedule: str, startTime: Time, instructor: str ):
-            # Helper function, init does actual work
-            self.init(course, sectionNumber, semester, sectionYear, building, room, schedule, startTime, instructor)
-
-
-elif introspection_type == INTROSPECT_TABLES:
-    '''
-        introspect the tables which find tables in the 
-        schema and use them to define the class
-    '''
-    class Section(Base):
-        __table__ = Table(table_name, Base.metadata, autoload_with=engine)
-        # Otherwise, this property will be named department_abbreviation
-        departmentAbbreviation: Mapped[str] = column_property(__table__.c.department_abbreviation)
-        # This back_populates will not be created by the introspection.
-        course: Mapped["Course"] = relationship(back_populates="sections")
-        # Otherwise, this property will be named section_number
-        sectionNumber: Mapped[int] = column_property(__table__.c.section_number)
-
-        def __init__(self, course: Course, sectionNumber: int, semester: str, sectionYear: int,  
-         building: str, room: int, schedule: str, startTime: Time, instructor: str ):
-            # Helper function, init does actual work
-            self.init(course, sectionNumber, semester, sectionYear, building, room, schedule, startTime, instructor)
+                         building: str, room: int, schedule: str, startTime: Time, instructor: str ):
+            self.sectionNumber = sectionNumber
+            self.semester = semester
+            self.sectionYear = sectionYear
+            self.building = building
+            self.room = room
+            self.schedule = schedule
+            self.startTime = startTime
+            self.instructor = instructor
 
 
 
-'''
-    Functions below are not subject to options. Init is the constructor
-    that is called from the classes that call it from either introspect or 
-    not instrospect options. Essnetially a helper function
-    Str method is how we get info out from the class
-'''
 
 # Accepts a new course without uniqueness constraints
 def set_course(self, course: Course):
     self.course = course
     self.courseNumber = course.courseNumber
-
-
-# initalize the table
-def init(self, course: Course, sectionNumber: int, semester: str, sectionYear: int,  
-         building: str, room: int, schedule: str, startTime: Time, instructor: str ):
-    self.set_course(course)
-    self.sectionNumber = sectionNumber
-    self.semester = semester
-    self.sectionYear = sectionYear
-    self.building = building
-    self.room = room
-    self.schedule = schedule
-    self.startTime = startTime
-    self.instructor = instructor
 
 # Return variables I guess that are within the class. 
 # Im not sure how it knows this if its outside of class/scope
@@ -125,6 +87,5 @@ def __str__(self):
 
 
 """Add the two instance methods to the class, regardless of whether we introspect or not."""
-setattr(Section, 'init', init)
 setattr(Section, 'set_course', set_course)
 setattr(Section, '__str__', __str__)
