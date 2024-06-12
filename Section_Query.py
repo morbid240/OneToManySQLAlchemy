@@ -74,7 +74,7 @@ def select_section(sess):
         if not found:
           print("No section found with that information. Please try again.")
     # Otherwise its been found
-    return = sess.query(Section).filter(Section.departmentAbbreviation == department_abbreviation,
+    return sess.query(Section).filter(Section.departmentAbbreviation == department_abbreviation,
             Section.courseNumber == course_number, Section.sectionNumber == section_number,
            Section.semester == semester, Section.sectionYear == section_year).first()
 
