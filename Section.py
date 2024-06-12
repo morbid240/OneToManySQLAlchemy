@@ -5,7 +5,6 @@ Simple one to many SQLAlchemy
 This defines the Section table and its 
 relationship to Course along with its constraints
 '''
-# todo: define 
 
 
 from orm_base import Base
@@ -108,7 +107,8 @@ def init(self, course: Course, sectionNumber: int, semester: str, sectionYear: i
 # Return variables I guess that are within the class. 
 # Im not sure how it knows this if its outside of class/scope
 def __str__(self):
-    return f"Section number: {self.sectionNumber}, Semester: {self.semester}, {self.sectionYear}, Room: {self.building} {self.room}"
+    return f"Section number: {self.sectionNumber}, \nSemester: {self.semester}, {self.sectionYear}, Room: {self.building} {self.room}
+            \nSchedule: {self.schedule}    {self.startTIME}\nInstructor: {self.instructor}"
 
 
 """Add the two instance methods to the class, regardless of whether we introspect or not."""
