@@ -1,5 +1,5 @@
 from Course import Course
-
+from Department import Department
 def add_course(session):
     """
     Prompt the user for the information for a new course and validate
