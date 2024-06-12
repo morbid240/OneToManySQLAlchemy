@@ -6,9 +6,7 @@ from db_connection import engine, Session
 from orm_base import metadata
 # Note that until you import your SQLAlchemy declarative classes, such as Student, Python
 # will not execute that code, and SQLAlchemy will be unaware of the mapped table.
-from Department import Department
-from Course import Course
-from Section import Section
+
 from Option import Option
 from Menu import Menu
 # Poor man's enumeration of the two available modes for creating the tables
@@ -16,43 +14,6 @@ from constants import START_OVER, INTROSPECT_TABLES, REUSE_NO_INTROSPECTION
 from sqlalchemy import inspect  # map from column name to attribute name
 
 
-def list_departments(session):
-    """
-    List all departments, sorted by the abbreviation.
-    :param session:     The connection to the database.
-    :return:            None
-    """
-    # session.query returns an iterator.  The list function converts that iterator
-    # into a list of elements.  In this case, they are instances of the Student class.
-    departments: [Department] = list(session.query(Department).order_by(Department.abbreviation))
-    for department in departments:
-        print(department)
-
-
-def list_courses(session):
-    """
-    List all courses currently in the database.
-    :param sess:    The connection to the database.
-    :return:        None
-    """
-    # session.query returns an iterator.  The list function converts that iterator
-    # into a list of elements.  In this case, they are instances of the Department class.
-    courses: [Course] = sess.query(Course).order_by(Course.courseNumber)
-    for course in courses:
-        print(course)
-
-
-def list_department_courses(session):
-    """
-    List all courses in a specific department.
-    :param sess:    The connection to the database.
-    :return:        None
-    """
-    department = select_department(sess)
-    dept_courses: [Course] = department.get_courses()
-    print("Course for department: " + str(department))
-    for dept_course in dept_courses:
-        print(dept_course)
 
 if __name__ == '__main__':
     print('Starting off')
