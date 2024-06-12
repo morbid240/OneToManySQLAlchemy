@@ -15,8 +15,7 @@ from sqlalchemy import UniqueConstraint, ForeignKeyConstraint, CheckConstraint
 from sqlalchemy import String, Integer, Time
 from sqlalchemy.orm import Mapped, mapped_column, relationship, column_property
 from sqlalchemy import Table
-from Course import Course
-from Department import Department
+from Course import Course #import only course which is parent
 from constants import START_OVER, REUSE_NO_INTROSPECTION, INTROSPECT_TABLES
 
 
