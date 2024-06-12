@@ -1,6 +1,6 @@
 from sqlalchemy import UniqueConstraint
 from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship, Integer
 from typing import List  # Use this for the list of courses offered by the department
 
 """This is the guts of the Course class that needs to be defined
