@@ -48,7 +48,7 @@ if introspection_type == START_OVER or introspection_type == REUSE_NO_INTROSPECT
 
         # Define relationships - tables populates course?
         course: Mapped["Course"] = relationship(back_populates="sections")
-        #  department: Mapped["Department"] = relationship(back_populates="courses")
+
         # Constraints
         __table_args__ = (
             # Canidate key 1: room cannot be occupied by more than one section at the same time, 
@@ -72,9 +72,22 @@ if introspection_type == START_OVER or introspection_type == REUSE_NO_INTROSPECT
 
 elif introspection_type == INTROSPECT_TABLES:
     '''
-        When choosing option 3, introspect the tables which find tables in the 
+        introspect the tables which find tables in the 
         schema and use them to define the class
     '''
+    class Sectio(Base):
+        __table__ = Table(table_name, Base.metadata, autoload_with=engine)
+        # Otherwise, this property will be named department_abbreviation
+        departmentAbbreviation: Mapped[str] = column_property(__table__.c.department_abbreviation)
+        # This back_populates will not be created by the introspection.
+        course: Mapped["Course"] = relationship(back_populates="sections")
+        # Otherwise, this property will be named section_number
+        sectionNumber: Mapped[int] = column_property(__table__.c.section_number)
+
+        def __init__(self, course: Course, sectionNumber: int, semester: str, sectionYear: int,  
+         building: str, room: int, schedule: str, startTime: Time, instructor: str ):
+            # Helper function, init does actual work
+            self.init(course, sectionNumber, semester, sectionYear, building, room, schedule, startTime, instructor)
 
 
 

@@ -8,46 +8,23 @@ from sqlalchemy import Table
 from Department import Department
 from constants import START_OVER, REUSE_NO_INTROSPECTION, INTROSPECT_TABLES
 from typing import List  # Use this for the list of sections by course
-"""In this Entity, I decided to do everything in this file, even though it got a little
-busy.  So there is no CourseClass.py to go with the DepartmentClass.py file."""
 
-table_name: str = "courses"  # The physical name of this table
-# Find out whether the user is introspecting or starting over
+import CourseClass as CC
+
 introspection_type = IntrospectionFactory().introspection_type
+
 if introspection_type == START_OVER or introspection_type == REUSE_NO_INTROSPECTION:
     class Course(Base):
-        """A catalog entry.  Each course proposes to offer students who enroll in
-        a section of the course an organized sequence of lessons and assignments
-        aimed at teaching them specified skills."""
-        __tablename__ = table_name  # Give SQLAlchemy the name of the table.
-        """
-        The ForeignKey argument to the mapped_column method is not needed because I am 
-        specifying this foreign key constraint in the __table_args__ call farther down
-        in the code.  I can do this either "in-line" using ForeignKey in the mapped_column
-        call, OR (exclusive OR here) do it in __table_args__.
-        
-        If we have more than one column in the primary key of the parent, then we 
-        MUST use __table_args__, we canNOT express the foreign key constraint using
-        ForeignKey.  I show you how to do it in __table_args__ because you'll need
-        that for the relationship from courses into sections.
-        """
-        departmentAbbreviation: Mapped[str] = mapped_column('department_abbreviation',
-                                                            #                                                       ForeignKey("departments.abbreviation"),
-                                                            primary_key=True)
-        department: Mapped["Department"] = relationship(back_populates="courses")
-        courseNumber: Mapped[int] = mapped_column('course_number', Integer,
-                                                  nullable=False, primary_key=True)
-        name: Mapped[str] = mapped_column('name', String(50), nullable=False)
-        description: Mapped[str] = mapped_column('description', String(500), nullable=False)
-        units: Mapped[int] = mapped_column('units', Integer, nullable=False)
-        '''Relationship from courses to sections'''
-        sections: Mapped[List["Section"]] = relationship(back_populates="course")
-        # __table_args__ can best be viewed as directives that we ask SQLAlchemy to
-        # send to the database.  In this case, that we want two separate uniqueness
-        # constraints (candidate keys).
-        __table_args__ = (UniqueConstraint("department_abbreviation", "name", name="courses_uk_01"),
-                          ForeignKeyConstraint([departmentAbbreviation],
-                                               [Department.abbreviation]))
+        __tablename__ = CC.__tablename__ 
+        departmentAbbreviation: Mapped[str] = CC.departmentAbbreviation
+        department: Mapped["Department"] = CC.department
+        courseNumber: Mapped[int] = CC.courseNumber
+        name: Mapped[str] = CC.name
+        description: Mapped[str] = CC.description
+        units: Mapped[int] = CC.units
+        sections: Mapped[List["Section"]] = CC.sections
+
+        __table_args__ = CC.__table_args__
 
         def __init__(self, department: Department, courseNumber: int, name: str, description: str, units: int):
             """This is a hack.  I found that I could not add __init__ to the class from outside the
@@ -64,11 +41,11 @@ if introspection_type == START_OVER or introspection_type == REUSE_NO_INTROSPECT
 
 elif introspection_type == INTROSPECT_TABLES:
     class Course(Base):
-        __table__ = Table(table_name, Base.metadata, autoload_with=engine)
+        __table__ = Table(CC.table_name, Base.metadata, autoload_with=engine)
         # Otherwise, this property will be named department_abbreviation
         departmentAbbreviation: Mapped[str] = column_property(__table__.c.department_abbreviation)
         # This back_populates will not be created by the introspection.
-        department: Mapped["Department"] = relationship(back_populates="courses")
+        department: Mapped["Department"] = CC.department
         # Otherwise, this property will be named course_number
         courseNumber: Mapped[int] = column_property(__table__.c.course_number)
 

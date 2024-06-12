@@ -21,9 +21,9 @@ variables or not in Python.
 
 # The main options for operating on Departments and Courses.
 menu_main = Menu('main', 'Please select one of the following options:', [
-    Option("Add department", "db_manager.add_department()"),
-    Option("Add course", "db_manager.add_course()"),
-    Option("Add section", "db_manager.add_section(sess)"),
+    Option("Add department", "add_department(sess)"),
+    Option("Add course", "add_course(sess)"),
+    Option("Add section", "add_section(sess)"),
     Option("Delete department", "delete_department(sess)"),
     Option("Delete course", "delete_course(sess)"),
     Option("Delete section", "delete_section(sess)"),

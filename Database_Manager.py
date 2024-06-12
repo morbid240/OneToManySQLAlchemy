@@ -10,43 +10,12 @@ from Course import Course
 from Section import Section
 
 class DatabaseManager:
-    # constructor 
-    def __init__(self, session):
-        self.session = session
-    
+
 
     ##      ADD FUNCTIONS       ##
 
 
-    def add_department(self):
-        """
-        Prompt the user for the information for a new department and validate
-        the input to make sure that we do not create any duplicates.
-        :param session: The connection to the database.
-        :return:        None
-        """
-        unique_name: bool = False
-        unique_abbreviation: bool = False
-        name: str = ''
-        abbreviation: str = ''
-        while not unique_abbreviation or not unique_name:
-            name = input("Department full name--> ")
-            abbreviation = input("Department abbreviation--> ")
-            name_count: int = session.query(Department).filter(Department.name == name).count()
-            unique_name = name_count == 0
-            if not unique_name:
-                print("We already have a department by that name.  Try again.")
-            if unique_name:
-                abbreviation_count = session.query(Department). \
-                    filter(Department.abbreviation == abbreviation).count()
-                unique_abbreviation = abbreviation_count == 0
-                if not unique_abbreviation:
-                    print("We already have a department with that abbreviation.  Try again.")
-        new_department = Department(abbreviation, name)
-        session.add(new_department)
-
-
-    def add_course(self):
+    def add_course(self, session):
         """
         Prompt the user for the information for a new course and validate
         the input to make sure that we do not create any duplicates.
@@ -54,7 +23,7 @@ class DatabaseManager:
         :return:        None
         """
         print("Which department offers this course?")
-        department: Department = select_department(sess)
+        department: Department = select_department(session)
         unique_number: bool = False
         unique_name: bool = False
         number: int = -1
@@ -164,43 +133,8 @@ class DatabaseManager:
     ##      LIST FUNCTIONS      ##
 
 
-    def list_departments(self):
-      """
-      List all departments, sorted by the abbreviation.
-      :param session:     The connection to the database.
-      :return:            None
-      """
-      # session.query returns an iterator.  The list function converts that iterator
-      # into a list of elements.  In this case, they are instances of the Student class.
-      departments: [Department] = list(session.query(Department).order_by(Department.abbreviation))
-      for department in departments:
-        print(department)
 
 
-    def list_courses(self):
-      """
-      List all courses currently in the database.
-      :param sess:    The connection to the database.
-      :return:        None
-      """
-      # session.query returns an iterator.  The list function converts that iterator
-      # into a list of elements.  In this case, they are instances of the Department class.
-      courses: [Course] = sess.query(Course).order_by(Course.courseNumber)
-      for course in courses:
-        print(course)
-
-
-    def list_department_courses(self):
-        """
-        List all courses in a specific department.
-        :param sess:    The connection to the database.
-        :return:        None
-        """
-        department = select_department(sess)
-        dept_courses: [Course] = department.get_courses()
-        print("Course for department: " + str(department))
-        for dept_course in dept_courses:
-            print(dept_course)
 
 
     ##      USER INPUT SELECTS      ##
