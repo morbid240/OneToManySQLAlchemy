@@ -139,9 +139,9 @@ def select_department(sess) -> Department:
         found = abbreviation_count == 1
         if not found:
             print("No department with that abbreviation.  Try again.")
-    return_student: Department = sess.query(Department). \
+    return_department: Department = sess.query(Department). \
         filter(Department.abbreviation == abbreviation).first()
-    return return_student
+    return return_department
 
 
 def select_course(sess) -> Course:
@@ -167,7 +167,12 @@ def select_course(sess) -> Course:
                                        Course.courseNumber == course_number).first()
     return course
 
-
+def select_section(session):
+    found: bool = False
+    section_number: int =-1
+    while not found:
+        section_number = input("Section number-->")
+        
 def delete_department(session):
     """
     Prompt the user for a department by the abbreviation and delete it.
@@ -183,6 +188,15 @@ def delete_department(session):
     else:
         session.delete(department)
 
+def delete_course(session):
+    print("deleting a course")
+    course = select_course(session)
+    number_sections = session.query(Section).filter(Section.courseNumber == course.courseNumber).count()
+    if number_sections > 0 
+        print(f"Sorry, there are {number_sections} sections associated with that course. Delete them first, "
+              "then come back here to delete the department.")
+    else:
+        session.delete(department)
 
 def list_departments(session):
     """
