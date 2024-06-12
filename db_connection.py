@@ -30,7 +30,7 @@ database            The name of the database within this particular instance of
                     PostgreSQL.  Every PostgreSQL has a postgres database, but
                     you can create additional databases as needed.  Each CECS 323
                     section has their own database in the campus PostgreSQL instance."""
-userID: str = input('User ID [postgres]--> ') or "030573684"
+userID: str = "030573684"
 """In order to get getpass to prompt you on the console, go to Run | Edit Configurations
 in the top menu, and check the box: 'Emulate terminal in output console'.  Otherwise,
 you will never see the prompt for the database password."""
