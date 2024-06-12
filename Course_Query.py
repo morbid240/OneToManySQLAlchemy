@@ -69,8 +69,10 @@ def delete_course(session):
     """
     print("Deleting a course")
     course = select_course(session)
-    session.delete(course)
-    session.commit()
+    if 0 < session.query(Sections).filter(Section.courseNumber == course.courseNumber).count()
+        print("Sections depend on this course, go delete them first and try again.")
+    else:
+        session.delete(course)
 
 def list_courses(sess):
     """
