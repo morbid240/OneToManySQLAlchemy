@@ -1,91 +1,64 @@
-from orm_base import Base
+import logging
+# My option lists for
+from menu_definitions import menu_main, debug_select
 from IntrospectionFactory import IntrospectionFactory
-from db_connection import engine
-from sqlalchemy import Table
-from sqlalchemy.orm import Mapped, mapped_column, relationship, column_property
-from typing import List  # Use this for the list of courses offered by the department
+from db_connection import engine, Session
+from orm_base import metadata
+# Note that until you import your SQLAlchemy declarative classes, such as Student, Python
+# will not execute that code, and SQLAlchemy will be unaware of the mapped table.
+from Department import Department
+from Course import Course
+from Section import Section
+from Option import Option
+from Menu import Menu
+# Poor man's enumeration of the two available modes for creating the tables
 from constants import START_OVER, INTROSPECT_TABLES, REUSE_NO_INTROSPECTION
+from sqlalchemy import inspect  # map from column name to attribute name
 
-"""I'm defining my attributes and functions in another file as something of an
-experiment.  I have to do virtually the same class definition regardless whether the
-class is the product of introspection or I define it from scratch since I'm going to
-override many of the names (to conform to our naming standards) as well as making
-the relationship between Department and Course bidirectional, which is not the 
-default mapping that introspection gives me."""
-import DepartmentClass as DC
 
-# Find out whether we're introspecting or recreating.
-introspection_type = IntrospectionFactory().introspection_type
 
-if introspection_type == START_OVER or introspection_type == REUSE_NO_INTROSPECTION:            # Define the entity from scratch
+def add_department(session):
+    Department.add_department()
+def select_department(session):
+    Department.select_department()
+def delete_department(session):
+    Department.delete_department()
 
-    class Department(Base):
-        """An organization within a particular college within a university.  Each
-        department offers one or more major fields of study to its students, and
-        within each major, some number of courses.  Each course is offered on
-        a regular basis as a scheduled section of a given course.
 
-        Note, this is just a shell of the Department class.  There are additional
-        columns needed, but this is enough to demonstrate one-to-many relationships.
-        """
-        __tablename__ = DC.__tablename__
-        name: Mapped[str] = DC.name
-        abbreviation: Mapped[str] = DC.abbreviation
-        """This is a bi-directional relationship.  The Department class manages
-        a list of Courses, and the Course class manages an OO reference to the
-        "owning" Department.
-        
-        The Course referenced here is a string because the Course.py file 
-        imports Departments.py.  If I try to import Course.py here, I'll set up
-        a cyclic import loop and Python will not be able to interpret either of
-        those class definition files."""
-        courses: Mapped[List["Course"]] = DC.courses
-        name: Mapped[str] = DC.name
-        # __table_args__ can best be viewed as directives that we ask SQLAlchemy to
-        # send to the database.  In this case, that we want two separate uniqueness
-        # constraints (candidate keys).
-        __table_args__ = DC.__table_args__
+if __name__ == '__main__':
+    print('Starting off')
+    logging.basicConfig()
+    # use the logging factory to create our first logger.
+    # for more logging messages, set the level to logging.DEBUG.
+    # logging_action will be the text string name of the logging level, for instance 'logging.INFO'
+    logging_action = debug_select.menu_prompt()
+    # eval will return the integer value of whichever logging level variable name the user selected.
+    logging.getLogger("sqlalchemy.engine").setLevel(eval(logging_action))
+    # use the logging factory to create our second logger.
+    # for more logging messages, set the level to logging.DEBUG.
+    logging.getLogger("sqlalchemy.pool").setLevel(eval(logging_action))
 
-        """The __init__ function appears to be special in SQLAlchemy.  I'm unable to 
-        leave that out when the class is initially declared, and then add it in afterwards.
-        So I'm defining the exact same __init__ method both for the start over as well
-        as the introspection case just to get past this interesting issue and move on."""
-        def __init__(self, abbreviation: str, name: str):
-            self.abbreviation = abbreviation
-            self.name = name
-elif introspection_type == INTROSPECT_TABLES:
-    # We need to connect to the database to introspect the table.  So I'm getting that done
-    # now, rather than in main.  Connection is a singleton factory of sorts.
-    class Department(Base):
-        # Creating the Table object does the introspection.  Basically, __table__
-        # allows SQLAlchemy to copy the metadata from the Table object into Base.metadata.
-        __table__ = Table(DC.__tablename__, Base.metadata, autoload_with=engine)
-        # The uniqueness constraint that I explicitly define for the START_OVER approach is already
-        # defined, so I don't need it here, so no __table_args__ needed.  The same consideration
-        # applies to a foreign key constraint with multiple columns in the parent's primary key.
+    # Prompt the user for whether they want to introspect the tables or create all over again.
+    introspection_mode: int = IntrospectionFactory().introspection_type
+    if introspection_mode == START_OVER:
+        print("starting over")
+        # create the SQLAlchemy structure that contains all the metadata, regardless of the introspection choice.
+        metadata.drop_all(bind=engine)  # start with a clean slate while in development
 
-        # The courses list will not get created just from introspecting the database, so I'm doing that here.
-        courses: Mapped[List["Course"]] = DC.courses
-        # I'm not actually overriding the attribute name here, I just want to see if I can do it.
-        # The __table__ attribute refers to the Table object that we created by introspection.
-        # More on metadata: https://docs.sqlalchemy.org/en/20/core/metadata.html
-        abbreviation: Mapped[str] = column_property(__table__.c.abbreviation)
+        # Create whatever tables are called for by our "Entity" classes that we have imported.
+        metadata.create_all(bind=engine)
+    elif introspection_mode == INTROSPECT_TABLES:
+        print("reusing tables")
+        # The reflection is done in the imported files that declare the entity classes, so there is no
+        # reflection needed at this point, those classes are loaded and ready to go.
+    elif introspection_mode == REUSE_NO_INTROSPECTION:
+        print("Assuming tables match class definitions")
 
-        def __init__(self, abbreviation: str, name: str):
-            self.abbreviation = abbreviation
-            self.name = name
-
-"""I tried to bring in __init__ from the imported code in each of these two (see below)
-ways, and in both cases when I tried to use the __init__ constructor, it blew up with
-an error telling me that Department has no attribute: _sa_instance_state which I
-GUESS means that the the __init__ method was somehow not included in vital processing 
-that SQLAlchemy does at the end of defining the class.  Pure guesswork on my part."""
-
-"""I could have defined these methods in this file, and then used setattr to add them
-to the Department class, but I figured that dividing it up this way made Department.py
-a little less cluttered.  I'm still boggled that all of these methods are instance
-methods, and they add to the existing class just fine.  Python is scary sometimes."""
-setattr(Department, 'add_course', DC.add_course)
-setattr(Department, 'remove_course', DC.remove_course)
-setattr(Department, 'get_courses', DC.get_courses)
-setattr(Department, '__str__', DC.__str__)
+    with Session() as sess:
+        main_action: str = ''
+        while main_action != menu_main.last_action():
+            main_action = menu_main.menu_prompt()
+            print('next action: ', main_action)
+            exec(main_action)
+        sess.commit()
+    print('Ending normally')
