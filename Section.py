@@ -85,6 +85,7 @@ elif introspection_type == INTROSPECT_TABLES:
     not instrospect options. Essnetially a helper function
     Str method is how we get info out from the class
 '''
+
 # Accepts a new course without uniqueness constraints
 def set_course(self, course: Course):
     self.course = course
@@ -107,10 +108,10 @@ def init(self, course: Course, sectionNumber: int, semester: str, sectionYear: i
 # Return variables I guess that are within the class. 
 # Im not sure how it knows this if its outside of class/scope
 def __str__(self):
-    return f"Section number: {self.sectionNumber}"
+    return f"Section number: {self.sectionNumber}, Semester: {self.semester}, {self.sectionYear}, Room: {self.building} {self.room}"
 
 
 """Add the two instance methods to the class, regardless of whether we introspect or not."""
-setattr(Course, 'init', init)
-setattr(Course, 'set_course', set_course)
-setattr(Course, '__str__', __str__)
+setattr(Section, 'init', init)
+setattr(Section, 'set_course', set_course)
+setattr(Section, '__str__', __str__)
