@@ -81,3 +81,44 @@ def list_department_courses(sess):
     print("Course for department: " + str(department))
     for dept_course in dept_courses:
         print(dept_course)
+
+def move_course_to_new_department(sess):
+    """
+    Take an existing course and move it to an existing department.  The course has to
+    have a department when the course is created, so this routine just moves it from
+    one department to another.
+
+    The change in department has to occur from the Course end of the association because
+    the association is mandatory.  We cannot have the course not have any department for
+    any time the way that we would if we moved it to a new department from the department
+    end.
+
+    Also, the change in department requires that we make sure that the course will not
+    conflict with any existing courses in the new department by name or number.
+    :param sess:    The connection to the database.
+    :return:        None
+    """
+    print("Input the course to move to a new department.")
+    course = select_course(sess)
+    old_department = course.department
+    print("Input the department to move that course to.")
+    new_department = select_department(sess)
+    if new_department == old_department:
+        print("Error, you're not moving to a different department.")
+    else:
+        # check to be sure that we are not violating the {departmentAbbreviation, name} UK.
+        name_count: int = sess.query(Course).filter(Course.departmentAbbreviation == new_department.abbreviation,
+                                                    Course.name == course.name).count()
+        unique_name = name_count == 0
+        if not unique_name:
+            print("We already have a course by that name in that department.  Try again.")
+        if unique_name:
+            # Make sure that moving the course will not violate the {departmentAbbreviation,
+            # course number} uniqueness constraint.
+            number_count = sess.query(Course). \
+                filter(Course.departmentAbbreviation == new_department.abbreviation,
+                       Course.courseNumber == course.courseNumber).count()
+            if number_count != 0:
+                print("We already have a course by that number in that department.  Try again.")
+            else:
+                course.set_department(new_department)
