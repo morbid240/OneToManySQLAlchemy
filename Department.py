@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship, column_property
 from typing import List  # Use this for the list of courses offered by the department
 from constants import START_OVER, INTROSPECT_TABLES, REUSE_NO_INTROSPECTION
 import DepartmentClass as DC
-from Course import Course 
+
 
 # Find out whether we're introspecting or recreating.
 introspection_type = IntrospectionFactory().introspection_type
