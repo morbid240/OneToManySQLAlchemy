@@ -28,16 +28,6 @@ if introspection_type == START_OVER or introspection_type == REUSE_NO_INTROSPECT
         __table_args__ = CC.__table_args__
 
         def __init__(self, department: Department, courseNumber: int, name: str, description: str, units: int):
-            """This is a hack.  I found that I could not add __init__ to the class from outside the
-            class definition block.  But I did not want to write the code for the __init__ twice.  So
-            I created this helper function that I just called init, and call that in __init__ to do
-            the actual work.  init only gets written once, saving me the worry of redundant code
-            between __init__ for the two different introspection approaches.
-            :param      department:     The Department instance that owns the new course.
-            :param      courseNumber:   The number of the new course.
-            :param      description:    Textual narrative of the course contents.
-            :param      units:          The number of academic hours awarded for a passing grade.
-            :return:                    None"""
             self.init(department, courseNumber, name, description, units)
 
 elif introspection_type == INTROSPECT_TABLES:
@@ -82,3 +72,19 @@ def __str__(self):
 setattr(Course, 'init', init)
 setattr(Course, 'set_department', set_department)
 setattr(Course, '__str__', __str__)
+
+
+def delete_course(self):
+    """
+    Prompt the user for a course and delete it.
+    :param session: The connection to the database.
+    :return:        None
+    """
+    print("deleting a course")
+    course = select_course(session)
+    number_sections = session.query(Section).filter(Section.courseNumber == course.courseNumber).count()
+    if number_sections > 0:
+        print(f"Sorry, there are {number_sections} sections associated with that course. Delete them first, "
+          "then come back here to delete the department.")
+    else:
+        session.delete(department)
