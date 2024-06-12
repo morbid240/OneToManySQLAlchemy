@@ -75,7 +75,7 @@ elif introspection_type == INTROSPECT_TABLES:
         introspect the tables which find tables in the 
         schema and use them to define the class
     '''
-    class Sectio(Base):
+    class Section(Base):
         __table__ = Table(table_name, Base.metadata, autoload_with=engine)
         # Otherwise, this property will be named department_abbreviation
         departmentAbbreviation: Mapped[str] = column_property(__table__.c.department_abbreviation)
