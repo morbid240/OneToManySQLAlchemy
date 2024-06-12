@@ -12,5 +12,5 @@ from db_connection import userID
 # boolean expression takes the right-hand argument as its output and passes that in to the
 # MetaData constructor.
 
-Base = declarative_base(metadata=MetaData(schema=(input(f'Schema name [{userID}]-->') or userID)))
+Base = declarative_base(metadata=MetaData(schema=userID))
 metadata = Base.metadata
