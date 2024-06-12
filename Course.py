@@ -6,7 +6,6 @@ from sqlalchemy import String, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship, column_property
 from sqlalchemy import Table
 from Department import Department
-from Section import Section
 from constants import START_OVER, REUSE_NO_INTROSPECTION, INTROSPECT_TABLES
 from typing import List  # Use this for the list of sections offered by the course
 
