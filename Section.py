@@ -48,7 +48,7 @@ if introspection_type == START_OVER or introspection_type == REUSE_NO_INTROSPECT
         startTime: Mapped[Time] = mapped_column('start_time', Time) # Not mandatory either?
         instructor: Mapped[str] = mapped_column('instructor', String(80), nullable=False)
 
-        # Define relationships
+        # Define relationships - corrected this shit
         course: Mapped["Course"] = relationship(back_populates="sections")
         # Constraints
         __table_args__ = (
