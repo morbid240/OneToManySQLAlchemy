@@ -6,9 +6,7 @@ from db_connection import engine, Session
 from orm_base import metadata
 # Note that until you import your SQLAlchemy declarative classes, such as Student, Python
 # will not execute that code, and SQLAlchemy will be unaware of the mapped table.
-from Department import Department
-from Course import Course
-from Section import Section
+from Department import add_department, select_department, delete_department
 from Option import Option
 from Menu import Menu
 # Poor man's enumeration of the two available modes for creating the tables
@@ -16,13 +14,6 @@ from constants import START_OVER, INTROSPECT_TABLES, REUSE_NO_INTROSPECTION
 from sqlalchemy import inspect  # map from column name to attribute name
 
 
-
-def add_department(session):
-    Department.add_department()
-def select_department(session):
-    Department.select_department()
-def delete_department(session):
-    Department.delete_department()
 
 
 if __name__ == '__main__':
