@@ -99,7 +99,7 @@ def add_section(session):
     schedule = input("Section schedule-->")
     start_time = input("Section start time as HH:MM::SS-->")
     # Check uniqueness constraints, match to when 
-    while not unique_room or unique_instructor:
+    while not unique_room or not unique_instructor:
         building = input("Building-->")
         room = int(input("Room-->"))
         room_count: int = session.query(Section).filter(Section.semester == semester, Section.sectionYear == section_year, 
