@@ -20,7 +20,7 @@ from Department import Department
 from constants import START_OVER, REUSE_NO_INTROSPECTION, INTROSPECT_TABLES
 
 
-table_name: str = "courses"  # The physical name of this table
+table_name: str = "sections"  # The physical name of this table
 # Find out whether the user is introspecting or starting over
 introspection_type = IntrospectionFactory().introspection_type
 if introspection_type == START_OVER or introspection_type == REUSE_NO_INTROSPECTION:
