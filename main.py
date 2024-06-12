@@ -6,7 +6,9 @@ from db_connection import engine, Session
 from orm_base import metadata
 # Note that until you import your SQLAlchemy declarative classes, such as Student, Python
 # will not execute that code, and SQLAlchemy will be unaware of the mapped table.
-from Department import add_department, select_department, delete_department
+from Department import add_department, select_department, delete_department, list_departments
+from Course import add_course, select_course, delete_course, list_courses
+from Section import add_section, select_section, delete_section
 from Option import Option
 from Menu import Menu
 # Poor man's enumeration of the two available modes for creating the tables
