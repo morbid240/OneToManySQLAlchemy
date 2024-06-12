@@ -20,6 +20,7 @@ description: Mapped[str] = mapped_column('description', String(500), nullable=Fa
 units: Mapped[int] = mapped_column('units', Integer, nullable=False)
 
 # Relationship to department(parent)
+department: Mapped["Department"] = relationship(back_populates="courses")
 sections: Mapped[List["Section"]] = relationship(back_populates="course")
 
 # Constraints 
