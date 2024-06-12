@@ -17,7 +17,6 @@ if introspection_type == START_OVER or introspection_type == REUSE_NO_INTROSPECT
         name: Mapped[str] = DC.name
         abbreviation: Mapped[str] = DC.abbreviation
         courses: Mapped[List["Course"]] = DC.courses
-        name: Mapped[str] = DC.name
         __table_args__ = DC.__table_args__
         def __init__(self, abbreviation: str, name: str):
             self.init(self, abbreviation, name)
