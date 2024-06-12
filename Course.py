@@ -6,7 +6,9 @@ from sqlalchemy import String, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship, column_property
 from sqlalchemy import Table
 from Department import Department
+from Section import Section
 from constants import START_OVER, REUSE_NO_INTROSPECTION, INTROSPECT_TABLES
+from typing import List  # Use this for the list of sections offered by the course
 
 """In this Entity, I decided to do everything in this file, even though it got a little
 busy.  So there is no CourseClass.py to go with the DepartmentClass.py file."""
@@ -31,15 +33,27 @@ if introspection_type == START_OVER or introspection_type == REUSE_NO_INTROSPECT
         ForeignKey.  I show you how to do it in __table_args__ because you'll need
         that for the relationship from courses into sections.
         """
+        # Primary Keys
         departmentAbbreviation: Mapped[str] = mapped_column('department_abbreviation',
                                                             #                                                       ForeignKey("departments.abbreviation"),
                                                             primary_key=True)
-        department: Mapped["Department"] = relationship(back_populates="courses")
         courseNumber: Mapped[int] = mapped_column('course_number', Integer,
                                                   nullable=False, primary_key=True)
+        # Other columns
         name: Mapped[str] = mapped_column('name', String(50), nullable=False)
         description: Mapped[str] = mapped_column('description', String(500), nullable=False)
         units: Mapped[int] = mapped_column('units', Integer, nullable=False)
+
+        """
+            I used a bidirectional relationship. Course as the parent keeps a list of
+            sections associated with the course.
+
+            The department relationship ensures that the course is mapped to department
+            list which also keeps track of courses associated with the department
+        """
+        # Relationships
+        department: Mapped["Department"] = relationship(back_populates="courses")
+        sections: Mapped[List["Section"]] = relationship(back_populates="course")
         # __table_args__ can best be viewed as directives that we ask SQLAlchemy to
         # send to the database.  In this case, that we want two separate uniqueness
         # constraints (candidate keys).

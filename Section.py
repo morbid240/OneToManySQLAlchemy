@@ -35,10 +35,9 @@ if introspection_type == START_OVER or introspection_type == REUSE_NO_INTROSPECT
         departmentAbbreviation: Mapped[str] = mapped_column('department_abbreviation', primary_key=True)
         courseNumber: Mapped[int] = mapped_column('course_number',                                               
                                                             primary_key=True)
-        course: Mapped["Course"] = relationship(back_populates="departments")
         sectionNumber: Mapped[int] = mapped_column('section_number', Integer,
                                                   nullable=False, primary_key=True)
-        semester: Mapped[str] = mapped_column('semester', String(10), nullable=False
+        semester: Mapped[str] = mapped_column('semester', String(10), nullable=False,
                                                             primary_key=True)
         sectionYear: Mapped[int] = mapped_column('section_year', Integer, nullable=False,
                                                             primary_key=True)
@@ -49,6 +48,8 @@ if introspection_type == START_OVER or introspection_type == REUSE_NO_INTROSPECT
         startTime: Mapped[Time] = mapped_column('start_time', Time) # Not mandatory either?
         instructor: Mapped[str] = mapped_column('instructor', String(80), nullable=False)
 
+        # Define relationships
+        course: Mapped["Course"] = relationship(back_populates="sections")
         # Constraints
         __table_args__ = (
             # Canidate key 1: room cannot be occupied by more than one section at the same time, 
@@ -59,8 +60,8 @@ if introspection_type == START_OVER or introspection_type == REUSE_NO_INTROSPECT
             CheckConstraint(semester.in_(["Fall", "Spring", "Winter", "Summer I", "Summer II"])),
             CheckConstraint(schedule.in_(["MW", "TuTh", "MWF", "F", "S"])),
             CheckConstraint(building.in_(["VEC", "ECS", "EN2", "EN3", "EN4", "ET", "SSPA"])),
-            # Course (Parent) contains two primary keys, referenced here
-            ForeignKeyConstraint([departmentAbbreviation, courseNumber], [course.department_abbreviation, course.course_number])
+            # Course (Parent) contains two primary keys. Referencing mapped_column and not attribute here
+            ForeignKeyConstraint([departmentAbbreviation, courseNumber], [Course.departmentAbbreviation, Course.courseNumber])
         )
         
         # "Constructor" for Section
