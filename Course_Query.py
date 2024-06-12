@@ -8,7 +8,7 @@ def add_course(session):
     :return:        None
     """
     print("Which department offers this course?")
-    department: Department = select_department(sess)
+    department: Department = select_department(session)
     unique_number: bool = False
     unique_name: bool = False
     number: int = -1
