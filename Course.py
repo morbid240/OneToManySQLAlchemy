@@ -1,9 +1,16 @@
-from orm_base import Base
-from db_connection import engine
-from IntrospectionFactory import IntrospectionFactory
+
 from sqlalchemy import UniqueConstraint, ForeignKeyConstraint
-from sqlalchemy import String, Integer
+
 from sqlalchemy.orm import Mapped, mapped_column, relationship, column_property
+
+from orm_base import Base
+from IntrospectionFactory import IntrospectionFactory
+from db_connection import engine
+
+from sqlalchemy import Table
+from sqlalchemy.orm import Mapped, mapped_column, relationship, column_property
+from typing import List  # Use this for the list of courses offered by the department
+from constants import START_OVER, INTROSPECT_TABLES, REUSE_NO_INTROSPECTION
 from sqlalchemy import Table
 
 from constants import START_OVER, REUSE_NO_INTROSPECTION, INTROSPECT_TABLES
