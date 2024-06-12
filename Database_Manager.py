@@ -11,6 +11,111 @@ class DatabaseManager:
     # constructor 
     def __init__(self, session):
         self.session = session
+    def add_department(session):
+    """
+    Prompt the user for the information for a new department and validate
+    the input to make sure that we do not create any duplicates.
+    :param session: The connection to the database.
+    :return:        None
+    """
+    unique_name: bool = False
+    unique_abbreviation: bool = False
+    name: str = ''
+    abbreviation: str = ''
+    while not unique_abbreviation or not unique_name:
+        name = input("Department full name--> ")
+        abbreviation = input("Department abbreviation--> ")
+        name_count: int = session.query(Department).filter(Department.name == name).count()
+        unique_name = name_count == 0
+        if not unique_name:
+            print("We already have a department by that name.  Try again.")
+        if unique_name:
+            abbreviation_count = session.query(Department). \
+                filter(Department.abbreviation == abbreviation).count()
+            unique_abbreviation = abbreviation_count == 0
+            if not unique_abbreviation:
+                print("We already have a department with that abbreviation.  Try again.")
+    new_department = Department(abbreviation, name)
+    session.add(new_department)
+
+
+def add_course(session):
+    """
+    Prompt the user for the information for a new course and validate
+    the input to make sure that we do not create any duplicates.
+    :param session: The connection to the database.
+    :return:        None
+    """
+    print("Which department offers this course?")
+    department: Department = select_department(sess)
+    unique_number: bool = False
+    unique_name: bool = False
+    number: int = -1
+    name: str = ''
+    while not unique_number or not unique_name:
+        name = input("Course full name--> ")
+        number = int(input("Course number--> "))
+        name_count: int = session.query(Course).filter(Course.departmentAbbreviation == department.abbreviation,
+                                                       Course.name == name).count()
+        unique_name = name_count == 0
+        if not unique_name:
+            print("We already have a course by that name in that department.  Try again.")
+        if unique_name:
+            number_count = session.query(Course). \
+                filter(Course.departmentAbbreviation == department.abbreviation,
+                       Course.courseNumber == number).count()
+            unique_number = number_count == 0
+            if not unique_number:
+                print("We already have a course in this department with that number.  Try again.")
+    description: str = input('Please enter the course description-->')
+    units: int = int(input('How many units for this course-->'))
+    course = Course(department, number, name, description, units)
+    session.add(course)
+
+def add_section(session):
+    """
+    Prompt user for adding a new section. Checks input for Uniqueness contraints
+    of {year, semester, schedule, start_time, building, room}
+    and {year, semester, scheudle, strt_time, instructor}
+    """
+    print("Which course are you adding this section?")
+    course: Course = select_course(session)
+    unique_room: bool = False
+    unique_instructor: bool = False
+
+    section_year: int = -1
+    semester: str = ''
+    schedule: str = ''
+    start_time: Time = "2:00:00"
+
+    # When is the section
+    semester = input("Section semester-->")
+    section_year = input("Section year-->")
+    schedule = input("Section schedule-->")
+    start_time = input("Section start time as HH:MM::SS-->")
+    # Check uniqueness constraints, match to when 
+    while not unique_room or not unique_instructor:
+        building = input("Building-->")
+        room = int(input("Room-->"))
+        room_count: int = session.query(Section).filter(Section.semester == semester, Section.sectionYear == section_year, 
+                                                        Section.schedule == schedule, Section.startTime == start_time,
+                                                        Section.building == building, Section.room==room).count()
+        unique_room = room_count == 0
+        if not unique_room:
+            print("We already have a section in that room, try again.")
+        if unique_room:
+            instructor = input("Instructor-->")
+            instructor_count = session.query(Section).filter(Section.semester == semester, Section.sectionYear == section_year, 
+                                                        Section.schedule == schedule, Section.startTime == start_time,
+                                                        Section.instructor == instructor).count()
+            unique_instructor = instructor_count == 0
+            if not unique_instructor:
+                print("That instructor is already teaching another section at that time. Try again.")
+            if unique_instructor:
+                section_number = input("Section number with leading 0-->")
+
+    section = Section(course, section_number, semester, section_year, building, room, schedule, start_time, instructor)
+    session.add(section)
 
   
     def delete_department(session):
