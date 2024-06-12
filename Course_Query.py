@@ -71,3 +71,18 @@ def delete_course(session):
     course = select_course(session)
     session.delete(course)
     session.commit()
+
+def list_courses(sess):
+    """
+    List all courses currently in the database.
+    :param sess:    The connection to the database.
+    :return:        None
+    """
+    # session.query returns an iterator.  The list function converts that iterator
+    # into a list of elements.  In this case, they are instances of the Student class.
+    courses: [Course] = sess.query(Course).order_by(Course.courseNumber)
+    for course in courses:
+        print(course)
+
+
+
