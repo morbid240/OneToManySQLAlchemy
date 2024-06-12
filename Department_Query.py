@@ -1,5 +1,5 @@
 from Department import Department
-
+from Course import Course 
 
 
 def add_department(session):
