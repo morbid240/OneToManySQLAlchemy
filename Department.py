@@ -1,64 +1,118 @@
-import logging
-# My option lists for
-from menu_definitions import menu_main, debug_select
+from orm_base import Base
 from IntrospectionFactory import IntrospectionFactory
-from db_connection import engine, Session
-from orm_base import metadata
-# Note that until you import your SQLAlchemy declarative classes, such as Student, Python
-# will not execute that code, and SQLAlchemy will be unaware of the mapped table.
-from Department import Department
-from Course import Course
-from Section import Section
-from Option import Option
-from Menu import Menu
-# Poor man's enumeration of the two available modes for creating the tables
+from db_connection import engine
+from sqlalchemy import Table
+from sqlalchemy.orm import Mapped, mapped_column, relationship, column_property
+from typing import List  # Use this for the list of courses offered by the department
 from constants import START_OVER, INTROSPECT_TABLES, REUSE_NO_INTROSPECTION
-from sqlalchemy import inspect  # map from column name to attribute name
+import DepartmentClass as DC
 
+# Find out whether we're introspecting or recreating.
+introspection_type = IntrospectionFactory().introspection_type
 
+if introspection_type == START_OVER or introspection_type == REUSE_NO_INTROSPECTION:  
+    class Department(Base):
+        __tablename__ = DC.__tablename__
+        name: Mapped[str] = DC.name
+        abbreviation: Mapped[str] = DC.abbreviation
+        courses: Mapped[List["Course"]] = DC.courses
+        name: Mapped[str] = DC.name
+        __table_args__ = DC.__table_args__
+        def __init__(self, abbreviation: str, name: str):
+            self.init(self, abbreviation, name)
+elif introspection_type == INTROSPECT_TABLES:
+    class Department(Base):
+        # Creating the Table object does the introspection.  Basically, __table__
+        # allows SQLAlchemy to copy the metadata from the Table object into Base.metadata.
+        __table__ = Table(DC.__tablename__, Base.metadata, autoload_with=engine)
+        # The courses list will not get created just from introspecting the database, so I'm doing that here.
+        courses: Mapped[List["Course"]] = DC.courses
+        abbreviation: Mapped[str] = column_property(__table__.c.abbreviation)
 
+        def __init__(self, abbreviation: str, name: str):
+            self.init(self, abbreviation, name)
+
+"""Methods for manipulating department objects. List is defined outside in main
+I am wary of imports. """
 def add_department(session):
-    Department.add_department()
-def select_department(session):
-    Department.select_department()
+    """
+    Prompt the user for the information for a new department and validate
+    the input to make sure that we do not create any duplicates.
+    :param session: The connection to the database.
+    :return:        None
+    """
+    unique_name: bool = False
+    unique_abbreviation: bool = False
+    name: str = ''
+    abbreviation: str = ''
+    while not unique_abbreviation or not unique_name:
+        name = input("Department full name--> ")
+        abbreviation = input("Department abbreviation--> ")
+        name_count: int = session.query(Department).filter(Department.name == name).count()
+        unique_name = name_count == 0
+        if not unique_name:
+            print("We already have a department by that name.  Try again.")
+        if unique_name:
+            abbreviation_count = session.query(Department). \
+                filter(Department.abbreviation == abbreviation).count()
+            unique_abbreviation = abbreviation_count == 0
+            if not unique_abbreviation:
+                print("We already have a department with that abbreviation.  Try again.")
+    new_department = Department(abbreviation, name)
+    session.add(new_department)
+
+
+def select_department(session) -> Department:
+    """
+    Prompt the user for a specific department by the department abbreviation.
+    :param sess:    The connection to the database.
+    :return:        The selected department.
+    """
+    found: bool = False
+    abbreviation: str = ''
+    while not found:
+        abbreviation = input("Enter the department abbreviation--> ")
+        abbreviation_count: int = session.query(Department). \
+            filter(Department.abbreviation == abbreviation).count()
+        found = abbreviation_count == 1
+        if not found:
+            print("No department with that abbreviation.  Try again.")
+    # return queried department
+    return session.query(Department).filter(Department.abbreviation == abbreviation).first()
+
+
 def delete_department(session):
-    Department.delete_department()
+    """
+    Prompt the user for a department by the abbreviation and delete it.
+    :param session: The connection to the database.
+    :return:        None
+    """
+    print("deleting a department")
+    department = select_department(session)
+    n_courses = session.query(Course).filter(Course.departmentAbbreviation == department.abbreviation).count()
+    if n_courses > 0:
+        print(f"Sorry, there are {n_courses} courses in that department.  Delete them first, "
+            "then come back here to delete the department.")
+    else:
+        session.delete(department)
+
+def list_departments(session):
+    """
+    List all departments, sorted by the abbreviation.
+    :param session:     The connection to the database.
+    :return:            None
+    """
+    # session.query returns an iterator.  The list function converts that iterator
+    # into a list of elements.  In this case, they are instances of the Student class.
+    departments: [Department] = list(session.query(Department).order_by(Department.abbreviation))
+    for department in departments:
+        print(department)
 
 
-if __name__ == '__main__':
-    print('Starting off')
-    logging.basicConfig()
-    # use the logging factory to create our first logger.
-    # for more logging messages, set the level to logging.DEBUG.
-    # logging_action will be the text string name of the logging level, for instance 'logging.INFO'
-    logging_action = debug_select.menu_prompt()
-    # eval will return the integer value of whichever logging level variable name the user selected.
-    logging.getLogger("sqlalchemy.engine").setLevel(eval(logging_action))
-    # use the logging factory to create our second logger.
-    # for more logging messages, set the level to logging.DEBUG.
-    logging.getLogger("sqlalchemy.pool").setLevel(eval(logging_action))
 
-    # Prompt the user for whether they want to introspect the tables or create all over again.
-    introspection_mode: int = IntrospectionFactory().introspection_type
-    if introspection_mode == START_OVER:
-        print("starting over")
-        # create the SQLAlchemy structure that contains all the metadata, regardless of the introspection choice.
-        metadata.drop_all(bind=engine)  # start with a clean slate while in development
+setattr(Department, 'add_course', DC.add_course)
+setattr(Department, 'remove_course', DC.remove_course)
+setattr(Department, 'get_courses', DC.get_courses)
 
-        # Create whatever tables are called for by our "Entity" classes that we have imported.
-        metadata.create_all(bind=engine)
-    elif introspection_mode == INTROSPECT_TABLES:
-        print("reusing tables")
-        # The reflection is done in the imported files that declare the entity classes, so there is no
-        # reflection needed at this point, those classes are loaded and ready to go.
-    elif introspection_mode == REUSE_NO_INTROSPECTION:
-        print("Assuming tables match class definitions")
-
-    with Session() as sess:
-        main_action: str = ''
-        while main_action != menu_main.last_action():
-            main_action = menu_main.menu_prompt()
-            print('next action: ', main_action)
-            exec(main_action)
-        sess.commit()
-    print('Ending normally')
+setattr(Department, 'init', DC.init)
+setattr(Department, '__str__', DC.__str__)
