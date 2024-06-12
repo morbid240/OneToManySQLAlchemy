@@ -77,14 +77,14 @@ def add_course(session):
     course = Course(department, number, name, description, units)
     session.add(course)
 
-def add_section(sess):
+def add_section(session):
     """
     Prompt user for adding a new section. Checks input for Uniqueness contraints
     of {year, semester, schedule, start_time, building, room}
     and {year, semester, scheudle, strt_time, instructor}
     """
     print("Which course are you adding this section?")
-    course: Course = select_course(sess)
+    course: Course = select_course(session)
     unique_room: bool = False
     unique_instructor: bool = False
 
